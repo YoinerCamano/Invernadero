@@ -1,5 +1,18 @@
 from machine import SoftI2C, Pin
-import time
+from umqtt.simple import MQTTClient
+import time, network
+
+# Configuración de la red WiFi
+SSID = "CONSOLA X32"
+PASSWORD_WLAN = "X32.consola"
+
+# Configuración de la conexión MQTT
+SERVER = "100.26.209.37"
+PORT = 1883
+USER = "guest"
+PASSWORD = "guest"
+CLIENT_ID = "Sensor_Esp32"
+TOPIC = "Cola_Temperatura"
 
 # Definir las constantes para la dirección y registros del sensor
 DEVICE_ADDRESS = 0x76
@@ -36,6 +49,16 @@ calib_x = [
     (calib_data[23] << 8) | calib_data[22]
     ]
 
+# Conectar a la red WiFi
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
+if not wlan.isconnected():
+    print("Conectando a la red WiFi...")
+    wlan.connect(SSID,PASSWORD_WLAN)
+    while not wlan.isconnected():
+        pass
+    print("Conexión WiFi establecida. Dirección IP:", wlan.ifconfig()[0])
+
 def calculos(calib):
     # Leer los registros de temperatura del sensor
     temp_msb = i2c.readfrom_mem(DEVICE_ADDRESS, REG_TEMP_MSB, 1)[0]
@@ -62,6 +85,19 @@ def calculos(calib):
     return([(temperature/100),humidity])
 
 while True:
-    x= calculos(calib_x)
-    print("Actualmente la temperatura es " + str(x[0]) + "°C")
-    time.sleep(5)
+    # Conectar al servidor MQTT y publicar el mensaje
+    client = MQTTClient(CLIENT_ID, SERVER, PORT, USER, PASSWORD)
+    out_sensor = calculos(calib_x)
+    MESSAGE = str(out_sensor[0])
+
+    if client.connect():
+        print("Conectando al servidor MQTT...")
+
+    try:
+        client.publish(TOPIC, MESSAGE, retain=False, qos=0)
+        print("Mensaje MQTT publicado en el tema", TOPIC, "Con los datos:", MESSAGE)
+    except OSError:
+        print("Error al conectar al servidor MQTT")
+    finally:
+        client.disconnect()
+    time.sleep(3)
