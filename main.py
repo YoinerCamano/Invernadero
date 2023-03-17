@@ -1,4 +1,3 @@
-from machine import SoftI2C, Pin
 import time, network
 from umqtt.simple import MQTTClient
 
@@ -20,7 +19,6 @@ wlan.active(True)
 if not wlan.isconnected():
     print("Conectando a la red WiFi...")
     wlan.connect(SSID,PASSWORD_WLAN)
-
     while not wlan.isconnected():
         pass
     print("Conexión WiFi establecida. Dirección IP:", wlan.ifconfig()[0])
@@ -29,7 +27,6 @@ band = 0
 while True:
     # Conectar al servidor MQTT y publicar el mensaje
     print("Conectando al servidor MQTT...")
-
     client = MQTTClient(CLIENT_ID, SERVER, PORT, USER, PASSWORD)
     client.connect()
     MESSAGE = str(band)

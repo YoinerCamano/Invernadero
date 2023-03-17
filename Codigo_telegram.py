@@ -1,7 +1,5 @@
 import urequests as requests
-import json
-
-
+import json, network, time
 
 # Configuración de la red WiFi
 
