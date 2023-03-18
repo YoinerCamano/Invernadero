@@ -1,6 +1,7 @@
 from machine import SoftI2C, Pin
+import urequests as requests
 from umqtt.simple import MQTTClient
-import time, network
+import time, network, json
 
 # Configuración de la red WiFi
 SSID = "CONSOLA X32"
@@ -12,7 +13,17 @@ PORT = 1883
 USER = "guest"
 PASSWORD = "guest"
 CLIENT_ID = "Sensor_Esp32"
-TOPIC = b'Cola_Temperatura'
+TOPIC = b'mensajes'
+
+# Configuración BOT TELEGRAM
+bot_token = "5839981812:AAH7AUgJNLoeo1E2LsZqb2ay8uGe4ecwE_I"
+chat_id = "1214775886"
+
+TEMP_MAX_PERMITIDA = 40
+TEMP_MIN_PERMITIDA = 30
+HUM_MAX_PERMITIDA = 40
+HUM_MIN_PERMITIDA = 35
+
 
 # Definir las constantes para la dirección y registros del sensor
 DEVICE_ADDRESS = 0x76
@@ -84,8 +95,24 @@ def calculos(calib):
 
     return([(temperature/100),humidity])
 
+def bot_telegram(message):
+    url = "https://api.telegram.org/bot{}/sendMessage".format(bot_token)
+    headers = {
+        "Content-Type": "application/json"
+        }
+    data_j = {
+        "chat_id": chat_id,
+        "text": message
+    }
+    response = requests.post(url, data=json.dumps(data_j), headers=headers)
+    print(response.text)
+
+#Variables de control temporal
+band = [1,1]
+cont_tiempo = [0,0]
+
 while True:
-    temp = ""
+    MESSAGE = ""
     # Conectar al servidor MQTT y publicar el mensaje
     client = MQTTClient(CLIENT_ID, SERVER, PORT, USER, PASSWORD)
     print("Conectando al servidor MQTT...")
@@ -95,13 +122,49 @@ while True:
         time.sleep(1)
     for i in range(6):
         out_sensor = calculos(calib_x)
-        temp = str(out_sensor[0]) + "," + str(round(out_sensor[1],2))
-        MESSAGE = temp
+        MESSAGE = str(out_sensor[0]) + "," + str(round(out_sensor[1],2))
         try:
             client.publish(TOPIC, MESSAGE.encode('utf-8'), retain=False, qos=0)
             print("Mensaje MQTT publicado en el tema", TOPIC, "Con los datos:", MESSAGE)
         except OSError:
             print("Error al conectar al servidor MQTT")
+
+        #Alerta por humedad relativa
+        if out_sensor[1]> HUM_MAX_PERMITIDA and band[1]:
+            MESSAGE_TEMP = "¡ALERTA HUMEDAD RELATIVA MUY ALTA, POR ENCIMA DE " + str(HUM_MAX_PERMITIDA) + "% !"
+            bot_telegram(MESSAGE_TEMP)
+            cont_tiempo[1] = 0
+            band[1] = 0
+        if out_sensor[1]<= HUM_MIN_PERMITIDA and band[1]:
+            MESSAGE_TEMP = "¡ALERTA HUMEDAD RELATIVA BAJA, POR DEBAJO DE " + str(HUM_MIN_PERMITIDA) + "% !"
+            bot_telegram(MESSAGE_TEMP)
+            cont_tiempo[1] = 0
+            band[1] = 0
+
+        # Alerta por temperatura
+        if out_sensor[0] >= TEMP_MAX_PERMITIDA and band[0]:
+            MESSAGE_TEMP = "¡ALERTA TEMPERATURA MUY ALTA, POR ENCIMA DE " + str(TEMP_MAX_PERMITIDA) + " Grados Celsius!"
+            bot_telegram(MESSAGE_TEMP)
+            cont_tiempo[0] = 0
+            band[0] = 0
+        if out_sensor[0]<= TEMP_MIN_PERMITIDA and band[0]:
+            MESSAGE_TEMP = "¡ALERTA TEMPERATURA BAJA, POR DEBAJO DE " + str(TEMP_MIN_PERMITIDA) + " Grados Celsius!"
+            bot_telegram(MESSAGE_TEMP)
+            cont_tiempo[0] = 0
+            band[0] = 0
+
         time.sleep(5)
+
+
+    cont_tiempo[0] +=1
+    cont_tiempo[1] +=1
+
+    if cont_tiempo[0] == 8:
+        cont_tiempo[0] = 0
+        band[0] = 1
+
+    if cont_tiempo[1] == 8:
+        cont_tiempo[1] = 0
+        band[1] = 1
 
     client.disconnect()

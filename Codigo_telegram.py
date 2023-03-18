@@ -23,17 +23,20 @@ if not wlan.isconnected():
         pass
     print("Conexión WiFi establecida. Dirección IP:", wlan.ifconfig()[0])
 
-url = "https://api.telegram.org/bot{}/sendMessage".format(bot_token)
-data = {
-    "chat_id": chat_id,
-    "text": message
-}
+def bot_telegram(message):
+    url = "https://api.telegram.org/bot{}/sendMessage".format(bot_token)
+    headers = {
+        "Content-Type": "application/json"
+        }
+    data_j = {
+        "chat_id": chat_id,
+        "text": message
+    }
+    response = requests.post(url, data=json.dumps(data_j), headers=headers)
+    return response
 
-headers = {
-    "Content-Type": "application/json"
-}
 while True:
-    response = requests.post(url, data=json.dumps(data), headers=headers)
+    response = bot_telegram("¡ALERTA HUMEDAD RELATIVA BAJA, POR DEBAJO DE " + str(35) + "Grados Celcius")
     print(response.text)
     time.sleep(10)
 
