@@ -8,7 +8,7 @@ SSID = "CONSOLA X32"
 PASSWORD_WLAN = "X32.consola"
 
 # Configuración de la conexión MQTT
-SERVER = "192.168.0.103"
+SERVER = "44.200.222.162"
 PORT = 1883
 USER = "guest"
 PASSWORD = "guest"
