@@ -145,7 +145,7 @@ while True:
                 bot_telegram(MESSAGE_TEMP)
             time.sleep(10)
             client.disconnect()
-            time.sleep(1)
+            time.sleep(290)
 
         except OSError:
             print("Error al conectar al servidor MQTT, reintentado en 10 segundos...")
