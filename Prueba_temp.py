@@ -143,7 +143,7 @@ while True:
             if out_sensor[0]<= TEMP_MIN_PERMITIDA:
                 MESSAGE_TEMP = "¡ALERTA TEMPERATURA BAJA, POR DEBAJO DE " + str(TEMP_MIN_PERMITIDA) + " Grados Celsius!"
                 bot_telegram(MESSAGE_TEMP)
-            time.sleep(10)
+            time.sleep(5)
             client.disconnect()
             time.sleep(1)
 

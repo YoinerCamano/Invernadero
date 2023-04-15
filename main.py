@@ -8,7 +8,7 @@ SSID = "CONSOLA X32"
 PASSWORD_WLAN = "X32.consola"
 
 # Configuración de la conexión MQTT
-SERVER = "192.168.0.102"
+SERVER = "35.172.135.49"
 PORT = 1883
 USER = "guest"
 PASSWORD = "guest"
@@ -145,7 +145,7 @@ while True:
                 bot_telegram(MESSAGE_TEMP)
             time.sleep(10)
             client.disconnect()
-            time.sleep(290)
+            time.sleep(10)
 
         except OSError:
             print("Error al conectar al servidor MQTT, reintentado en 10 segundos...")
