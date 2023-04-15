@@ -4,8 +4,8 @@ from umqtt.simple import MQTTClient
 import time, network, json
 
 # Configuración de la red WiFi
-SSID = "CONSOLA X32"
-PASSWORD_WLAN = "X32.consola"
+SSID = "Wi-Fi Unimagdalena"
+PASSWORD_WLAN = ""
 
 # Configuración de la conexión MQTT
 SERVER = "192.168.0.102"

@@ -11,8 +11,8 @@ control[2].on()
 control[3].on()
 
 # Configuración de la red WiFi
-SSID = "CONSOLA X32"
-PASSWORD_WLAN = "X32.consola"
+SSID = "Wi-Fi Unimagdalena"
+PASSWORD_WLAN = ""
 
 #clientes_ telegram_alertas
 Clientes_telegram = {1:1214775886,
@@ -73,18 +73,19 @@ HUM_MAX_PERMITIDA = 50
 HUM_MIN_PERMITIDA = 32
 
 def Control_Invernadero(temperatura,humedad):
-    if TEMP_MIN_PERMITIDA == temperatura:
+    if TEMP_MIN_PERMITIDA <temperatura:
         control[2].off()
         control[3].off()
         control[0].off()
-    if HUM_MIN_PERMITIDA == humedad:
+    if HUM_MIN_PERMITIDA < humedad:
         control[1].off()
-    if HUM_MAX_PERMITIDA == humedad:
+    if (HUM_MAX_PERMITIDA > humedad) or (humedad > 40):
         control[1].on()
-    if TEMP_MAX_PERMITIDA == temperatura:
+    if (TEMP_MAX_PERMITIDA > temperatura) or (temperatura >27):
         control[2].on()
         control[3].on()
         control[0].on()
+    return()
 
 
 def calculos(calib):
