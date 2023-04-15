@@ -7,10 +7,10 @@ services:
     ports:
       - "8086:8086"
     env_file:
-      - services/influx/.env
+      - Modulo_4/InfluxDB/.env
     build:
       context: .
-      dockerfile: services/influx/Dockerfile
+      dockerfile: Modulo_4/InfluxDB/Dockerfile
     networks:
       default:
         aliases:
@@ -22,7 +22,7 @@ services:
     restart: always
     build:
       context: .
-      dockerfile: services/rabbit/Dockerfile
+      dockerfile: Modulo_4/Rabbit/Dockerfile
     ports:
       - "15672:15672"
       - "5672:5672"
@@ -38,7 +38,7 @@ services:
     restart: always
     build:
       context: .
-      dockerfile: services/grafana/Dockerfile
+      dockerfile: Modulo_4/Grafana/Dockerfile
     ports:
       - "3000:3000"
       
@@ -48,7 +48,20 @@ services:
     restart: always
     build:
       context: .
-      dockerfile: services/telegraf/Dockerfile
+      dockerfile: Modulo_4/Telegraf/Dockerfile
+    depends_on:
+      - database
+      - broker
+    links:
+      - database
+
+  analitica:
+    image: analitica_image
+    container_name: analitica
+    restart: always
+    build:
+      context: .
+      dockerfile: Modulo_4/Analitica/Dockerfile
     depends_on:
       - database
       - broker
